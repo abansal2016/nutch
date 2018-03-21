@@ -39,6 +39,7 @@ import org.apache.hadoop.mapreduce.Mapper.Context;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapred.FileSplit;
@@ -486,7 +487,7 @@ public class Fetcher extends NutchTool implements Tool {
     job.setMapperClass(Fetcher.FetcherRun.class);
 
     FileOutputFormat.setOutputPath(job, segment);
-    job.setOutputFormatClass(FetcherOutputFormat.class);
+    job.setOutputFormatClass(TextOutputFormat.class);
     job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(NutchWritable.class);
 
