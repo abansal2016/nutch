@@ -478,8 +478,8 @@ MapRunnable<Text, CrawlDatum, Text, NutchWritable> {
 
     job.setMapRunnerClass(Fetcher.class);
 
-    FileOutputFormat.setOutputPath(job, segment);
-    job.setOutputFormat(FetcherOutputFormat.class);
+    FileOutputFormat.setOutputPath(job, new Path(segment, CrawlDatum.FETCH_DIR_NAME));
+    job.setOutputFormat(TextOutputFormat.class);
     job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(NutchWritable.class);
 
