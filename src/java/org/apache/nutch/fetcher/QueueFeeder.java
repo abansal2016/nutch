@@ -88,6 +88,8 @@ public class QueueFeeder extends Thread {
             CrawlDatum datum = new CrawlDatum();
             hasMore = reader.next(url, datum);
             if (hasMore) {
+             LOG.info("Abhishek Input key: " + url.toString());
+             LOG.info("Abhishek Input value: " + datum.toString());
               queues.addFetchItem(url, datum);
               cnt++;
               feed--;

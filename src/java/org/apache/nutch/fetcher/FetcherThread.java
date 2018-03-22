@@ -651,8 +651,12 @@ public class FetcherThread extends Thread {
     }
 
     try {
+      LOG.info("Abhishek 1 Output key: " + key.toString());
+      LOG.info("Abhishek 1 Output value: " + (new NutchWritable(datum)).toString());
       output.collect(key, new NutchWritable(datum));
       if (content != null && storingContent)
+        LOG.info("Abhishek 2 Output key: " + key.toString());
+        LOG.info("Abhishek 2 Output value: " + (new NutchWritable(content)).toString());
         output.collect(key, new NutchWritable(content));
       if (parseResult != null) {
         for (Entry<Text, Parse> entry : parseResult) {
@@ -799,7 +803,10 @@ public class FetcherThread extends Thread {
           // filtered set
           parseData.setOutlinks(outlinkList.toArray(new Outlink[outlinkList
               .size()]));
-
+          
+          LOG.info("Abhishek 3 Output key: " + url.toString());
+          LOG.info("Abhishek 3 Output value: " + (new NutchWritable(new ParseImpl(new ParseText(
+              parse.getText()), parseData, parse.isCanonical()))).toString());
           output.collect(url, new NutchWritable(new ParseImpl(new ParseText(
               parse.getText()), parseData, parse.isCanonical())));
         }
@@ -827,6 +834,8 @@ public class FetcherThread extends Thread {
       LOG.debug("fetched and stored robots.txt {}",
           robotsTxt.getUrl());
       try {
+        LOG.info("Abhishek 4 Output key: " + (new Text(robotsTxt.getUrl())).toString());
+        LOG.info("Abhishek 4 Output value: " + (new NutchWritable(robotsTxt)).toString());
         output.collect(new Text(robotsTxt.getUrl()),
             new NutchWritable(robotsTxt));
       } catch (IOException e) {
