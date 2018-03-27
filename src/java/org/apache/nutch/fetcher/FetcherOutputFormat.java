@@ -36,6 +36,7 @@ import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
+import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.hadoop.util.Progressable;
 import org.apache.nutch.parse.Parse;
 import org.apache.nutch.parse.ParseOutputFormat;
@@ -76,17 +77,15 @@ public class FetcherOutputFormat implements OutputFormat<Text, NutchWritable> {
         fetch, fKeyClassOpt, fValClassOpt, fCompOpt, fProgressOpt);
 
     return new RecordWriter<Text, NutchWritable>() {
-      private MapFile.Writer contentOut;
+      private RecordWriter<Text, Content> contentOut;
       private RecordWriter<Text, Parse> parseOut;
 
       {
         if (Fetcher.isStoringContent(job)) {
-          Option cKeyClassOpt = MapFile.Writer.keyClass(Text.class);
-          org.apache.hadoop.io.SequenceFile.Writer.Option cValClassOpt = SequenceFile.Writer.valueClass(Content.class);
-          org.apache.hadoop.io.SequenceFile.Writer.Option cProgressOpt = SequenceFile.Writer.progressable(progress);
-          org.apache.hadoop.io.SequenceFile.Writer.Option cCompOpt = SequenceFile.Writer.compression(compType);
-          contentOut = new MapFile.Writer(job, content,
-              cKeyClassOpt, cValClassOpt, cCompOpt, cProgressOpt);
+          TextOutputFormat txtout = new TextOutputFormat();
+          //txtout.setOutputPath(job, new Path(out, Content.DIR_NAME));
+          //contentOut = txtout.getRecordWriter(fs, job, name, progress);
+          contentOut = new TextOutputFormat().getRecordWriter(fs, job, name, progress);
         }
 
         if (Fetcher.isParsing(job)) {
@@ -102,7 +101,7 @@ public class FetcherOutputFormat implements OutputFormat<Text, NutchWritable> {
         if (w instanceof CrawlDatum)
           fetchOut.append(key, w);
         else if (w instanceof Content && contentOut != null)
-          contentOut.append(key, w);
+          contentOut.write(key, (Content) w);
         else if (w instanceof Parse && parseOut != null)
           parseOut.write(key, (Parse) w);
       }
@@ -110,7 +109,7 @@ public class FetcherOutputFormat implements OutputFormat<Text, NutchWritable> {
       public void close(Reporter reporter) throws IOException {
         fetchOut.close();
         if (contentOut != null) {
-          contentOut.close();
+          contentOut.close(reporter);
         }
         if (parseOut != null) {
           parseOut.close(reporter);
