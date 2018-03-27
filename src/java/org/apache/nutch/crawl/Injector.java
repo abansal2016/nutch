@@ -30,10 +30,11 @@ import org.apache.hadoop.mapreduce.lib.input.KeyValueTextInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.MultipleInputs;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.MapFileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.io.compress.GzipCodec;
 
 import org.apache.nutch.metadata.Nutch;
 import org.apache.nutch.net.URLFilters;
@@ -402,7 +403,7 @@ public class Injector extends NutchTool implements Tool {
     job.setJarByClass(Injector.class);
     job.setMapperClass(InjectMapper.class);
     job.setReducerClass(InjectReducer.class);
-    job.setOutputFormatClass(MapFileOutputFormat.class);
+    job.setOutputFormatClass(TextOutputFormat.class);
     job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(CrawlDatum.class);
     job.setSpeculativeExecution(false);
@@ -411,6 +412,8 @@ public class Injector extends NutchTool implements Tool {
     MultipleInputs.addInputPath(job, current, SequenceFileInputFormat.class);
     MultipleInputs.addInputPath(job, urlDir, KeyValueTextInputFormat.class);
     FileOutputFormat.setOutputPath(job, tempCrawlDb);
+    FileOutputFormat.setCompressOutput(job, true);
+    FileOutputFormat.setOutputCompressorClass(job, GzipCodec.class);
 
     try {
       // run the job
