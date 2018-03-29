@@ -42,6 +42,8 @@ import org.apache.nutch.metadata.Metadata;
 import org.apache.nutch.util.MimeUtil;
 import org.apache.nutch.util.NutchConfiguration;
 
+import org.json.simple.JSONObject;
+
 public final class Content implements Writable {
 
   public static final String DIR_NAME = "content";
@@ -248,6 +250,20 @@ public final class Content implements Writable {
     buffer.append(new String(content)); // try default encoding
 
     return buffer.toString();
+
+  }
+
+  public String toJSON() {
+    JSONObject obj = new JSONObject();
+
+    obj.put("Version", version);
+    obj.put("url", url);
+    obj.put("base", base);
+    obj.put("contentType", contentType);
+    obj.put("metadata", metadata);
+    obj.put("Content", new String(content));
+
+    return obj.toString();
 
   }
 

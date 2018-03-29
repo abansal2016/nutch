@@ -42,6 +42,8 @@ import org.apache.nutch.parse.Parse;
 import org.apache.nutch.parse.ParseOutputFormat;
 import org.apache.nutch.protocol.Content;
 
+import org.json.simple.JSONObject;
+
 /** Splits FetcherOutput entries into multiple map files. */
 public class FetcherOutputFormat implements OutputFormat<Text, NutchWritable> {
 
@@ -85,7 +87,7 @@ public class FetcherOutputFormat implements OutputFormat<Text, NutchWritable> {
           TextOutputFormat txtout = new TextOutputFormat();
           //txtout.setOutputPath(job, new Path(out, Content.DIR_NAME));
           //contentOut = txtout.getRecordWriter(fs, job, name, progress);
-          contentOut = new TextOutputFormat().getRecordWriter(fs, job, name, progress);
+          contentOut = txtout.getRecordWriter(fs, job, name, progress);
         }
 
         if (Fetcher.isParsing(job)) {
@@ -100,8 +102,13 @@ public class FetcherOutputFormat implements OutputFormat<Text, NutchWritable> {
 
         if (w instanceof CrawlDatum)
           fetchOut.append(key, w);
-        else if (w instanceof Content && contentOut != null)
-          contentOut.write(key, (Content) w);
+        else if (w instanceof Content && contentOut != null) {
+          JSONObject obj = new JSONObject();
+          obj.put(key, w);
+          Text new_key = new Text(obj.toString());
+          contentOut.write(new_key, (Content) w);
+          //contentOut.write(key, (Content) w);
+        }
         else if (w instanceof Parse && parseOut != null)
           parseOut.write(key, (Parse) w);
       }
