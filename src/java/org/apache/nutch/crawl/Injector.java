@@ -23,6 +23,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -56,6 +57,8 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+
+import org.json.simple.JSONObject;
 
 /**
  * Injector takes a flat text file of URLs (or a folder containing text files)
@@ -269,7 +272,7 @@ public class Injector extends NutchTool implements Tool {
 
   /** Combine multiple new entries for a url. */
   public static class InjectReducer
-      extends Reducer<Text, CrawlDatum, Text, CrawlDatum> {
+      extends Reducer<Text, CrawlDatum, Text, NullWritable> {
     private int interval;
     private float scoreInjected;
     private boolean overwrite = false;
@@ -341,7 +344,10 @@ public class Injector extends NutchTool implements Tool {
       if (injectedSet && oldSet) {
         context.getCounter("injector", "urls_merged").increment(1);
       }
-      context.write(key, result);
+      JSONObject obj = new JSONObject();
+      obj.put(key, result.toString());
+      Text new_key = new Text(obj.toString());
+      context.write(new_key, NullWritable.get());
     }
   }
 
@@ -405,7 +411,8 @@ public class Injector extends NutchTool implements Tool {
     job.setReducerClass(InjectReducer.class);
     job.setOutputFormatClass(TextOutputFormat.class);
     job.setOutputKeyClass(Text.class);
-    job.setOutputValueClass(CrawlDatum.class);
+    job.setOutputValueClass(NullWritable.class);
+    job.setMapOutputValueClass(CrawlDatum.class);
     job.setSpeculativeExecution(false);
 
     // set input and output paths of the job
