@@ -253,7 +253,7 @@ public final class Content implements Writable {
 
   }
 
-  public String toJSON() {
+  public JSONObject toJSON() {
     JSONObject obj = new JSONObject();
 
     obj.put("Version", version);
@@ -263,7 +263,7 @@ public final class Content implements Writable {
     obj.put("metadata", metadata);
     obj.put("Content", new String(content));
 
-    return obj.toString();
+    return obj;
 
   }
 

@@ -27,6 +27,7 @@ import org.apache.hadoop.io.MapFile;
 import org.apache.hadoop.io.MapFile.Writer.Option;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.mapred.FileOutputFormat;
@@ -79,14 +80,14 @@ public class FetcherOutputFormat implements OutputFormat<Text, NutchWritable> {
         fetch, fKeyClassOpt, fValClassOpt, fCompOpt, fProgressOpt);
 
     return new RecordWriter<Text, NutchWritable>() {
-      private RecordWriter<Text, Content> contentOut;
+      private RecordWriter<Text, NullWritable> contentOut;
       private RecordWriter<Text, Parse> parseOut;
 
       {
         if (Fetcher.isStoringContent(job)) {
           TextOutputFormat txtout = new TextOutputFormat();
+          JobConf job_new = new JobConf(job);
           //txtout.setOutputPath(job, new Path(out, Content.DIR_NAME));
-          //contentOut = txtout.getRecordWriter(fs, job, name, progress);
           contentOut = txtout.getRecordWriter(fs, job, name, progress);
         }
 
@@ -104,9 +105,10 @@ public class FetcherOutputFormat implements OutputFormat<Text, NutchWritable> {
           fetchOut.append(key, w);
         else if (w instanceof Content && contentOut != null) {
           JSONObject obj = new JSONObject();
-          obj.put(key, w);
+          String html_content = new String(((Content) w).getContent());
+          obj.put(key, html_content);
           Text new_key = new Text(obj.toString());
-          contentOut.write(new_key, (Content) w);
+          contentOut.write(new_key, NullWritable.get());
           //contentOut.write(key, (Content) w);
         }
         else if (w instanceof Parse && parseOut != null)
