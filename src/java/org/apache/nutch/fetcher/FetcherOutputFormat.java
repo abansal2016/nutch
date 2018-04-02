@@ -29,6 +29,7 @@ import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.compress.GzipCodec;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.InvalidJobConfException;
@@ -87,7 +88,9 @@ public class FetcherOutputFormat implements OutputFormat<Text, NutchWritable> {
         if (Fetcher.isStoringContent(job)) {
           TextOutputFormat txtout = new TextOutputFormat();
           JobConf job_new = new JobConf(job);
-          //txtout.setOutputPath(job, new Path(out, Content.DIR_NAME));
+          txtout.setOutputPath(job, new Path(out, Content.DIR_NAME));
+          txtout.setCompressOutput(job, true);
+          txtout.setOutputCompressorClass(job, GzipCodec.class);
           contentOut = txtout.getRecordWriter(fs, job, name, progress);
         }
 
@@ -106,7 +109,8 @@ public class FetcherOutputFormat implements OutputFormat<Text, NutchWritable> {
         else if (w instanceof Content && contentOut != null) {
           JSONObject obj = new JSONObject();
           String html_content = new String(((Content) w).getContent());
-          obj.put(key, html_content);
+          obj.put("url", key);
+          obj.put("url_content", html_content);
           Text new_key = new Text(obj.toString());
           contentOut.write(new_key, NullWritable.get());
           //contentOut.write(key, (Content) w);
