@@ -109,7 +109,7 @@ public class FetcherOutputFormat implements OutputFormat<Text, NutchWritable> {
         else if (w instanceof Content && contentOut != null) {
           JSONObject obj = new JSONObject();
           String html_content = new String(((Content) w).getContent());
-          obj.put("url", key);
+          obj.put("url", key.toString());
           obj.put("url_content", html_content);
           Text new_key = new Text(obj.toString());
           contentOut.write(new_key, NullWritable.get());
