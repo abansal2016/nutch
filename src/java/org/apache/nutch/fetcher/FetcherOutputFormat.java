@@ -45,6 +45,7 @@ import org.apache.nutch.parse.ParseOutputFormat;
 import org.apache.nutch.protocol.Content;
 
 import org.json.simple.JSONObject;
+import com.hadoop.compression.lzo.LzopCodec;
 
 /** Splits FetcherOutput entries into multiple map files. */
 public class FetcherOutputFormat implements OutputFormat<Text, NutchWritable> {
@@ -90,7 +91,7 @@ public class FetcherOutputFormat implements OutputFormat<Text, NutchWritable> {
           JobConf job_new = new JobConf(job);
           txtout.setOutputPath(job, new Path(out, Content.DIR_NAME));
           txtout.setCompressOutput(job, true);
-          txtout.setOutputCompressorClass(job, GzipCodec.class);
+          txtout.setOutputCompressorClass(job, LzopCodec.class);
           contentOut = txtout.getRecordWriter(fs, job, name, progress);
         }
 
