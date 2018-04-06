@@ -29,7 +29,6 @@ import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.compress.GzipCodec;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.InvalidJobConfException;
@@ -82,18 +81,23 @@ public class FetcherOutputFormat implements OutputFormat<Text, NutchWritable> {
         fetch, fKeyClassOpt, fValClassOpt, fCompOpt, fProgressOpt);
 
     return new RecordWriter<Text, NutchWritable>() {
-      private RecordWriter<Text, NullWritable> contentOut;
+      private MapFile.Writer contentOut;
+      private RecordWriter<Text, NullWritable> rawHTMLOut;
       private RecordWriter<Text, Parse> parseOut;
 
       {
         if (Fetcher.isStoringContent(job)) {
-          //TextOutputFormat txtout = new TextOutputFormat();
-          //JobConf job_new = new JobConf(job);
-          //TextOutputFormat.setOutputPath(job, new Path(Content.DIR_NAME));
+          Option cKeyClassOpt = MapFile.Writer.keyClass(Text.class);
+          org.apache.hadoop.io.SequenceFile.Writer.Option cValClassOpt = SequenceFile.Writer.valueClass(Content.class);
+          org.apache.hadoop.io.SequenceFile.Writer.Option cProgressOpt = SequenceFile.Writer.progressable(progress);
+          org.apache.hadoop.io.SequenceFile.Writer.Option cCompOpt = SequenceFile.Writer.compression(compType);
+          contentOut = new MapFile.Writer(job, content,
+              cKeyClassOpt, cValClassOpt, cCompOpt, cProgressOpt);
+
           TextOutputFormat.setCompressOutput(job, true);
           TextOutputFormat.setOutputCompressorClass(job, LzopCodec.class);
-          String name1 = new Path(Content.DIR_NAME, name).toString();
-          contentOut = new TextOutputFormat().getRecordWriter(fs, job, name1, progress);
+          String name1 = new Path("Raw_HTML", name).toString();
+          rawHTMLOut = new TextOutputFormat().getRecordWriter(fs, job, name1, progress);
         }
 
         if (Fetcher.isParsing(job)) {
@@ -109,13 +113,14 @@ public class FetcherOutputFormat implements OutputFormat<Text, NutchWritable> {
         if (w instanceof CrawlDatum)
           fetchOut.append(key, w);
         else if (w instanceof Content && contentOut != null) {
+          contentOut.append(key, w);
+
           JSONObject obj = new JSONObject();
           String html_content = new String(((Content) w).getContent());
           obj.put("url", key.toString());
           obj.put("url_content", html_content);
           Text new_key = new Text(obj.toString());
-          contentOut.write(new_key, NullWritable.get());
-          //contentOut.write(key, (Content) w);
+          rawHTMLOut.write(new_key, NullWritable.get());
         }
         else if (w instanceof Parse && parseOut != null)
           parseOut.write(key, (Parse) w);
@@ -124,7 +129,8 @@ public class FetcherOutputFormat implements OutputFormat<Text, NutchWritable> {
       public void close(Reporter reporter) throws IOException {
         fetchOut.close();
         if (contentOut != null) {
-          contentOut.close(reporter);
+          contentOut.close();
+          rawHTMLOut.close(reporter);
         }
         if (parseOut != null) {
           parseOut.close(reporter);
