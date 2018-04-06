@@ -87,12 +87,13 @@ public class FetcherOutputFormat implements OutputFormat<Text, NutchWritable> {
 
       {
         if (Fetcher.isStoringContent(job)) {
-          TextOutputFormat txtout = new TextOutputFormat();
-          JobConf job_new = new JobConf(job);
-          txtout.setOutputPath(job, new Path(out, Content.DIR_NAME));
-          txtout.setCompressOutput(job, true);
-          txtout.setOutputCompressorClass(job, LzopCodec.class);
-          contentOut = txtout.getRecordWriter(fs, job, name, progress);
+          //TextOutputFormat txtout = new TextOutputFormat();
+          //JobConf job_new = new JobConf(job);
+          //TextOutputFormat.setOutputPath(job, new Path(Content.DIR_NAME));
+          TextOutputFormat.setCompressOutput(job, true);
+          TextOutputFormat.setOutputCompressorClass(job, LzopCodec.class);
+          String name1 = new Path(Content.DIR_NAME, name).toString();
+          contentOut = new TextOutputFormat().getRecordWriter(fs, job, name1, progress);
         }
 
         if (Fetcher.isParsing(job)) {
