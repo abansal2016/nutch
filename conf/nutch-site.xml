@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<!-- Put site-specific property overrides in this file. -->
+
+<configuration>
+
+<property>
+   <name>http.agent.name</name>
+   <value>Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:58.0) Gecko/20100101 Firefox/58.0</value>
+</property>
+
+<property>
+  <name>http.content.limit</name>
+  <value>655360</value>
+  <description>The length limit for downloaded content using the http://
+  protocol, in bytes. If this value is nonnegative (>=0), content longer
+  than it will be truncated; otherwise, no truncation at all. Do not
+  confuse this setting with the file.content.limit setting.
+  </description>
+</property>
+<property>
+  <name>db.ignore.external.links</name>
+  <value>true</value>
+  <description>If true, outlinks leading from a page to external hosts or domain
+  will be ignored. This is an effective way to limit the crawl to include
+  only initially injected hosts or domains, without creating complex URLFilters.
+  See 'db.ignore.external.links.mode'.
+  </description>
+</property>
+
+<property>
+<name>db.class.file.format</name>
+  <value>SequenceFileOutputFormat.class</value>
+  <description>The length limit for downloaded content using the http://
+  protocol, in bytes. If this value is nonnegative (>=0), content longer
+  than it will be truncated; otherwise, no truncation at all. Do not
+  confuse this setting with the file.content.limit setting.
+  </description>
+</property>
+
+<property>
+  <name>http.redirect.max</name>
+  <value>1</value>
+  <description>The maximum number of redirects the fetcher will follow when
+  trying to fetch a page. If set to negative or 0, fetcher won't immediately
+  follow redirected URLs, instead it will record them for later fetching.
+  </description>
+</property>
+
+<property>
+  <name>plugin.includes</name>
+  <value>protocol-http|protocol-httpclient|urlfilter-(regex|validator)|parse-(html|tika)|index-(basic|anchor)|indexer-solr|scoring-opic|urlnormalizer-(pass|regex|basic)</value>
+  <description>Regular expression naming plugin directory names to
+  include.  Any plugin not matching this expression is excluded.
+  In any case you need at least include the nutch-extensionpoints plugin. By
+  default Nutch includes crawling just HTML and plain text via HTTP,
+  and basic indexing and search plugins. In order to use HTTPS please enable
+  protocol-httpclient, but be aware of possible intermittent problems with the
+  underlying commons-httpclient library. Set parsefilter-naivebayes for classification based focused crawler.
+  </description>
+</property>
+
+</configuration>
