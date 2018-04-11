@@ -113,7 +113,7 @@ public class ParseOutputFormat implements OutputFormat<Text, Parse> {
         "db.ignore.external.links.mode", "byHost");
     // NUTCH-2435 - parameter "parser.store.text" allowing to choose whether to
     // store 'parse_text' directory or not:
-    final boolean storeText = job.getBoolean("parser.store.text", true);
+    //final boolean storeText = job.getBoolean("parser.store.text", true);
 
     int maxOutlinksPerPage = job.getInt("db.max.outlinks.per.page", 100);
     final boolean isParsing = job.getBoolean("fetcher.parse", true);
@@ -123,38 +123,38 @@ public class ParseOutputFormat implements OutputFormat<Text, Parse> {
         .getOutputCompressionType(job);
     Path out = FileOutputFormat.getOutputPath(job);
 
-    Path text = new Path(new Path(out, ParseText.DIR_NAME), name);
-    Path data = new Path(new Path(out, ParseData.DIR_NAME), name);
+    //Path text = new Path(new Path(out, ParseText.DIR_NAME), name);
+    //Path data = new Path(new Path(out, ParseData.DIR_NAME), name);
     Path crawl = new Path(new Path(out, CrawlDatum.PARSE_DIR_NAME), name);
 
     final String[] parseMDtoCrawlDB = job.get("db.parsemeta.to.crawldb", "")
         .split(" *, *");
 
     // textOut Options
-    final MapFile.Writer textOut;
-    if (storeText) {
-      Option tKeyClassOpt = (Option) MapFile.Writer.keyClass(Text.class);
-      org.apache.hadoop.io.SequenceFile.Writer.Option tValClassOpt = SequenceFile.Writer
-          .valueClass(ParseText.class);
-      org.apache.hadoop.io.SequenceFile.Writer.Option tProgressOpt = SequenceFile.Writer
-          .progressable(progress);
-      org.apache.hadoop.io.SequenceFile.Writer.Option tCompOpt = SequenceFile.Writer
-          .compression(CompressionType.RECORD);
+    //final MapFile.Writer textOut;
+    //if (storeText) {
+    //  Option tKeyClassOpt = (Option) MapFile.Writer.keyClass(Text.class);
+    //  org.apache.hadoop.io.SequenceFile.Writer.Option tValClassOpt = SequenceFile.Writer
+    //      .valueClass(ParseText.class);
+    //  org.apache.hadoop.io.SequenceFile.Writer.Option tProgressOpt = SequenceFile.Writer
+    //      .progressable(progress);
+    //  org.apache.hadoop.io.SequenceFile.Writer.Option tCompOpt = SequenceFile.Writer
+    //      .compression(CompressionType.RECORD);
 
-      textOut = new MapFile.Writer(job, text, tKeyClassOpt, tValClassOpt,
-          tCompOpt, tProgressOpt);
-    } else {
-      textOut = null;
-    }
+    //  textOut = new MapFile.Writer(job, text, tKeyClassOpt, tValClassOpt,
+    //      tCompOpt, tProgressOpt);
+    //} else {
+    //  textOut = null;
+    // }
 
     // dataOut Options
-    Option dKeyClassOpt = (Option) MapFile.Writer.keyClass(Text.class);
-    org.apache.hadoop.io.SequenceFile.Writer.Option dValClassOpt = SequenceFile.Writer.valueClass(ParseData.class);
-    org.apache.hadoop.io.SequenceFile.Writer.Option dProgressOpt = SequenceFile.Writer.progressable(progress);
-    org.apache.hadoop.io.SequenceFile.Writer.Option dCompOpt = SequenceFile.Writer.compression(compType);
+    //Option dKeyClassOpt = (Option) MapFile.Writer.keyClass(Text.class);
+    //org.apache.hadoop.io.SequenceFile.Writer.Option dValClassOpt = SequenceFile.Writer.valueClass(ParseData.class);
+    //org.apache.hadoop.io.SequenceFile.Writer.Option dProgressOpt = SequenceFile.Writer.progressable(progress);
+    //org.apache.hadoop.io.SequenceFile.Writer.Option dCompOpt = SequenceFile.Writer.compression(compType);
 
-    final MapFile.Writer dataOut = new MapFile.Writer(job, data,
-        dKeyClassOpt, dValClassOpt, dCompOpt, dProgressOpt);
+    //final MapFile.Writer dataOut = new MapFile.Writer(job, data,
+    //    dKeyClassOpt, dValClassOpt, dCompOpt, dProgressOpt);
     
     final SequenceFile.Writer crawlOut = SequenceFile.createWriter(job, SequenceFile.Writer.file(crawl),
         SequenceFile.Writer.keyClass(Text.class),
@@ -173,9 +173,9 @@ public class ParseOutputFormat implements OutputFormat<Text, Parse> {
         String fromUrl = key.toString();
         // host or domain name of the source URL
         String origin = null;
-        if (textOut != null) {
-          textOut.append(key, new ParseText(parse.getText()));
-        }
+        //if (textOut != null) {
+        //  textOut.append(key, new ParseText(parse.getText()));
+        //}
 
         ParseData parseData = parse.getData();
         // recover the signature prepared by Fetcher or ParseSegment
@@ -307,7 +307,7 @@ public class ParseOutputFormat implements OutputFormat<Text, Parse> {
             .size()]);
         parseData = new ParseData(parseData.getStatus(), parseData.getTitle(),
             filteredLinks, parseData.getContentMeta(), parseData.getParseMeta());
-        dataOut.append(key, parseData);
+        //dataOut.append(key, parseData);
         if (!parse.isCanonical()) {
           CrawlDatum datum = new CrawlDatum();
           datum.setStatus(CrawlDatum.STATUS_FETCH_SUCCESS);
@@ -324,9 +324,9 @@ public class ParseOutputFormat implements OutputFormat<Text, Parse> {
       }
 
       public void close(Reporter reporter) throws IOException {
-        if (textOut != null)
-          textOut.close();
-        dataOut.close();
+        //if (textOut != null)
+        //  textOut.close();
+        //dataOut.close();
         crawlOut.close();
       }
 
