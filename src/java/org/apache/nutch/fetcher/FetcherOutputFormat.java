@@ -18,6 +18,7 @@
 package org.apache.nutch.fetcher;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 
 import org.apache.nutch.crawl.CrawlDatum;
 import org.apache.nutch.crawl.NutchWritable;
@@ -37,17 +38,39 @@ import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
-import org.apache.hadoop.mapred.TextOutputFormat;
+import org.apache.hadoop.mapred.TextOutputFormat; /*this needs to be commendted: Abhishek*/
+import org.apache.hadoop.mapred.lib.MultipleTextOutputFormat;
 import org.apache.hadoop.util.Progressable;
 import org.apache.nutch.parse.Parse;
 import org.apache.nutch.parse.ParseOutputFormat;
 import org.apache.nutch.protocol.Content;
+import org.apache.nutch.util.URLUtil;
 
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import com.hadoop.compression.lzo.LzopCodec;
 
 /** Splits FetcherOutput entries into multiple map files. */
 public class FetcherOutputFormat implements OutputFormat<Text, NutchWritable> {
+
+  static class KeyBasedMultipleTextOutputFormat extends MultipleTextOutputFormat<Text, NullWritable> {
+    @Override
+    protected String generateFileNameForKeyValue(Text key, NullWritable value, String name) {
+      String domain = "Ashu";
+      try {
+        JSONParser parser = new JSONParser();
+        JSONObject obj = (JSONObject) parser.parse(key.toString());
+        String url = (String) obj.get("url");
+        domain = URLUtil.getDomainName(url).toLowerCase();
+      } catch(ParseException e) {
+        e.printStackTrace();
+      } catch(MalformedURLException e) {
+        e.printStackTrace();
+      }
+      return "Raw_HTML/" + domain + "/" + name;
+    }
+  }  
 
   public void checkOutputSpecs(FileSystem fs, JobConf job) throws IOException {
     Path out = FileOutputFormat.getOutputPath(job);
@@ -94,10 +117,11 @@ public class FetcherOutputFormat implements OutputFormat<Text, NutchWritable> {
           contentOut = new MapFile.Writer(job, content,
               cKeyClassOpt, cValClassOpt, cCompOpt, cProgressOpt);
 
-          TextOutputFormat.setCompressOutput(job, true);
-          TextOutputFormat.setOutputCompressorClass(job, LzopCodec.class);
+          //TextOutputFormat.setCompressOutput(job, true);
+          //TextOutputFormat.setOutputCompressorClass(job, LzopCodec.class);
           String name1 = new Path("Raw_HTML", name).toString();
-          rawHTMLOut = new TextOutputFormat().getRecordWriter(fs, job, name1, progress);
+          //rawHTMLOut = new TextOutputFormat().getRecordWriter(fs, job, name1, progress);
+          rawHTMLOut = new KeyBasedMultipleTextOutputFormat().getRecordWriter(fs, job, name, progress);
         }
 
         if (Fetcher.isParsing(job)) {
