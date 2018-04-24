@@ -17,6 +17,9 @@
 
 package org.apache.nutch.fetcher;
 
+import java.text.SimpleDateFormat;
+import java.text.DateFormat;
+import java.util.Date;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
@@ -38,7 +41,6 @@ import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
-import org.apache.hadoop.mapred.TextOutputFormat; /*this needs to be commendted: Abhishek*/
 import org.apache.hadoop.mapred.lib.MultipleTextOutputFormat;
 import org.apache.hadoop.util.Progressable;
 import org.apache.nutch.parse.Parse;
@@ -57,7 +59,9 @@ public class FetcherOutputFormat implements OutputFormat<Text, NutchWritable> {
   static class KeyBasedMultipleTextOutputFormat extends MultipleTextOutputFormat<Text, NullWritable> {
     @Override
     protected String generateFileNameForKeyValue(Text key, NullWritable value, String name) {
-      String domain = "Ashu";
+      String domain = "";
+      SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
       try {
         JSONParser parser = new JSONParser();
         JSONObject obj = (JSONObject) parser.parse(key.toString());
@@ -68,7 +72,7 @@ public class FetcherOutputFormat implements OutputFormat<Text, NutchWritable> {
       } catch(MalformedURLException e) {
         e.printStackTrace();
       }
-      return "Raw_HTML/" + domain + "/" + name;
+      return "raw_HTML/" + domain + "/" + dateFormat.format(new Date()) + "/" + name;
     }
   }  
 
@@ -117,10 +121,8 @@ public class FetcherOutputFormat implements OutputFormat<Text, NutchWritable> {
           contentOut = new MapFile.Writer(job, content,
               cKeyClassOpt, cValClassOpt, cCompOpt, cProgressOpt);
 
-          //TextOutputFormat.setCompressOutput(job, true);
-          //TextOutputFormat.setOutputCompressorClass(job, LzopCodec.class);
-          String name1 = new Path("Raw_HTML", name).toString();
-          //rawHTMLOut = new TextOutputFormat().getRecordWriter(fs, job, name1, progress);
+          //KeyBasedMultipleTextOutputFormat.setCompressOutput(job, true);
+          //KeyBasedMultipleTextOutputFormat.setOutputCompressorClass(job, LzopCodec.class);
           rawHTMLOut = new KeyBasedMultipleTextOutputFormat().getRecordWriter(fs, job, name, progress);
         }
 
@@ -143,6 +145,7 @@ public class FetcherOutputFormat implements OutputFormat<Text, NutchWritable> {
           String html_content = new String(((Content) w).getContent());
           obj.put("url", key.toString());
           obj.put("url_content", html_content);
+          obj.put("domain", URLUtil.getDomainName(key.toString()).toLowerCase());
           Text new_key = new Text(obj.toString());
           rawHTMLOut.write(new_key, NullWritable.get());
         }
