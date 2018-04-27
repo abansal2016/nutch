@@ -61,4 +61,11 @@
   </description>
 </property>
 
+<property>
+  <name>fetcher.parse</name>
+  <value>true</value>
+  <description>If true, fetcher will parse content. Default is false, which means
+  that a separate parsing step is required after fetching is finished.</description>
+</property>
+
 </configuration>
